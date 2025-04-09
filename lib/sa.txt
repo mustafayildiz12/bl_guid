@@ -1,0 +1,73 @@
+#include <BLEDevice.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
+
+int scanTime = 5; // Tarama süresi (saniye)
+
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    // RSSI değeri -60'dan yüksekse (yani -60 > değeri) işlemlere devam et
+    if(advertisedDevice.haveRSSI() && advertisedDevice.getRSSI() > -60) {
+      Serial.println("Cihaz Bulundu:");
+      
+      // Genel cihaz bilgilerini gösteren string
+      Serial.println(advertisedDevice.toString().c_str());
+
+      // Cihaz adı var mı kontrolü
+      if(advertisedDevice.haveName()){
+        Serial.print("Cihaz Adı: ");
+        Serial.println(advertisedDevice.getName().c_str());
+      }
+      
+      // RSSI (sinyal gücü) bilgisini oku
+      Serial.print("RSSI: ");
+      Serial.println(advertisedDevice.getRSSI());
+      
+      // Üretici (manufacturer) verisi okunuyor ise
+      if(advertisedDevice.haveManufacturerData()){
+        Serial.print("Üretici Verisi: ");
+        Serial.println(advertisedDevice.getManufacturerData().c_str());
+      }
+      
+      // Hizmet UUID'si var mı kontrolü
+      if(advertisedDevice.haveServiceUUID()){
+        Serial.print("Hizmet UUID: ");
+        Serial.println(advertisedDevice.getServiceUUID().toString().c_str());
+      }
+      
+      // Ek olarak hizmet verisi varsa okunabilir
+      if(advertisedDevice.haveServiceData()){
+        Serial.print("Hizmet Verisi: ");
+        Serial.println(advertisedDevice.getServiceData().c_str());
+      }
+      
+      // Diğer veriler de gerekirse eklenebilir...
+    }
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("BLE Tarayıcı Başlatılıyor...");
+
+  // BLE'yi başlatın
+  BLEDevice::init("");
+  
+  // Tarayıcıyı elde edip ayarlayın
+  BLEScan* pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);  // Daha fazla veri almak için aktif tarama
+}
+
+void loop() {
+  Serial.println("Tarama başlatılıyor...");
+  
+  // Tarama yap ve sonuçları pointer olarak al
+  BLEScanResults* foundDevices = BLEDevice::getScan()->start(scanTime, false);
+  Serial.print("Bulunan Cihaz Sayısı: ");
+  Serial.println(foundDevices->getCount());
+  
+  // Tarama sonuçlarını hafızadan temizleyin
+  BLEDevice::getScan()->clearResults();
+  delay(2000);
+}

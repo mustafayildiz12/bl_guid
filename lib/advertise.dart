@@ -100,17 +100,18 @@ class _AdvertisePageState extends State<AdvertisePage> {
       });
       //? Low Power Destekliyor
       final advertiseData = AdvertiseData(
-        serviceUuid: uuid, // bu uuid ikisinde de çalışıyor
-        // manufacturerId: 1234, // sadece android
-        // manufacturerData: Uint8List.fromList([1, 2, 3, 4]), // sadece android
-        //  serviceData: [1, 2, 3],
-        // serviceDataUuid: serviceDataUuid,
-        // serviceSolicitationUuid: serviceSolicitationUuid,
+        includeDeviceName: true,
+        serviceUuid: "0000abcd-0000-1000-8000-00805f9b34fb",
+        
       );
 
       await flutterBlePeripheral.start(
-          advertiseData: advertiseData,
-          advertiseSettings: AdvertiseSettings(connectable: true));
+        advertiseData: advertiseData,
+        advertiseSettings: AdvertiseSettings(
+          advertiseMode: AdvertiseMode.advertiseModeLowLatency,
+          txPowerLevel: AdvertiseTxPower.advertiseTxPowerHigh
+        )
+      );
 
       setState(() {
         isAdvertising = true;
